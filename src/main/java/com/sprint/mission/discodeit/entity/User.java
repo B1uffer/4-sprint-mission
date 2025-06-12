@@ -1,11 +1,14 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.List;
 import java.util.UUID;
 
-public class User {
-    
-    // 회원이 있어야한다
+public class User implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     private final UUID id; // 객체를 식별하기 위한 id, 변경할 수 없다
     private String nickName; // 닉네임, 변경 가능하다
@@ -28,63 +31,52 @@ public class User {
     // 생성자
 
     public User(String nickName, String password) {
-
         id = UUID.randomUUID();
         createdAt = System.currentTimeMillis();
         this.nickName = nickName;
         this.password = password;
-
     }
 
 
     // 각 필드를 반환하는 getter함수 정의
     public UUID getId() {
-
         return id;
-
     }
 
     public String getNickName() {
-
         return nickName;
-
     }
 
     public String getPassword() {
-
         return password;
-
     }
 
     public Long getCreatedAt() {
-
         return createdAt;
-
     }
 
     public Long getUpdatedAt() {
-
         return updatedAt;
-
     }
 
-    // 필드를 수정하는 update 함수 정의
-    // id, createdAt, updatedAt 외에 nickName, password를 수정한다
-    // 수정한 현재 날짜를 updatedAt에 저장한다
-    public void setNickName(String newNickName) { // setter로 바꾸기
+    // 필드를 수정하는 update 함수 정의, 닉네임과 비밀번호만 변경한다
+    // 얘들 boolean이 되면 안된다 수정하자
 
-        nickName = newNickName;
-        updatedAt = System.currentTimeMillis();
-
-    }
-
-    public void setPassword(String newPassword) {
-
-        password = newPassword;
-        updatedAt = System.currentTimeMillis();
-
+    public void updateNickName(String newNickName) {
+            nickName = newNickName;
+            updatedAt = System.currentTimeMillis();
     }
 
 
+    public void updatePassword(String newPassword) {
+            password = newPassword;
+            updatedAt = System.currentTimeMillis();
+    }
+
+    public String toCSV() {
+
+        return id + "," + nickName + "," + password + "," + createdAt + "," + updatedAt;
+
+    }
 
 }

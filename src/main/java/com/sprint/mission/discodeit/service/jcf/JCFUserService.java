@@ -3,102 +3,63 @@ package com.sprint.mission.discodeit.service.jcf;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.userService;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.UUID;
+
 
 public class JCFUserService implements userService {
 
     // [유저1, 유저2, 유저3, 유저4, ...]
 
-    private final List<User> userList;
+    private final Map<UUID,User> userList;
 
     public JCFUserService() {
 
-        userList = new ArrayList<>(); // ?
+        userList = new HashMap<>();
 
     }
 
     public User createUser(String nickName, String password) {
 
+        UUID userId = UUID.randomUUID();
         User newClient = new User(nickName, password); // User에서 생성자에 public을 안넣어주면 에러발생
-        userList.add(newClient);
+        userList.put(userId,newClient);
 
         return newClient;
 
     }
 
-    public User readUser(UUID searchId) {
-        // 1. userList에서 입력받은 id에 맞는 유저를 찾기
-        // 2. return으로 그 유저를 되돌려주기
+    public User searchUser(UUID searchId) {
 
-        User user = null;
-
-        for(int i = 0; i < userList.size(); i++) {
-
-            UUID userId = userList.get(i).getId();
-
-            if(userId.equals(searchId)) {
-
-                user = userList.get(i);
-
-            }
-
+        if (userList.containsKey(searchId)) {
+            User findUser = userList.get(searchId);
+            return findUser;
         }
 
-        return user;
-
+        return null;
     }
 
-    public User updateUser(UUID searchId, String newNickName) {
+    public User updateUser(UUID userId, String newNickName) {
+        User update = userList.get(userId);
 
-        // userList에서 입력받은 id에 맞는 유저를 찾은 다음
-        // setNickName을 이용하여 nickName을 바꾸기
-
-        User user = null;
-
-        for(int i = 0; i < userList.size(); i++) {
-
-            UUID userId = userList.get(i).getId();
-
-            if(userId.equals(searchId)) {
-
-                user = userList.get(i);
-                user.setNickName(newNickName);
-
-            }
-
+        if(newNickName != null && !newNickName.equals(update.getNickName())) {
+            update.updateNickName(newNickName);
         }
 
-        return user;
-
+        return null;
     }
 
-    public boolean deleteUser(UUID searchId, String password) {
+    public User deleteUser(UUID searchId) {
 
-        // userList에서 입력받은 id에 맞는 유저를 찾은 다음
-        // 입력한 비밀번호가 가지고 있는 비밀번호와 같다면,
-        // userList에서 해당 유저를 지운다
+        if(!userList.containsKey(searchId)) {
 
-        loop:
-        for(int i = 0; i < userList.size(); i++) {
-
-            UUID userId = userList.get(i).getId();
-
-            if(userId.equals(searchId)) {
-
-                if(password.equals(userList.get(i).getPassword())) {
-
-                    userList.remove(i);
-                    break loop;
-
-                }
-
-            }
+            throw new NoSuchElementException("너는 계정을 삭제 할 수 없어!");
 
         }
 
-        return true;
+        return userList.remove(searchId);
 
     }
 

@@ -1,43 +1,57 @@
-package com.sprint.mission.discodeit.run;
+package com.sprint.mission.discodeit.service.file;
 
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
-import com.sprint.mission.discodeit.service.messageService;
+import com.sprint.mission.discodeit.service.userService;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
-public class JavaApplication {
+public class FileUserService {
 
-    public static void init(Path directory) { // 파일 생성
+    // 서비스 인터페이스를 구현하라고 했으니 userService를 구현하는게 맞을것이다
+    // JCF 대신 FileIO, 객체 직렬화를 활용해 메서드를 구현하라고 했다
+    // 멍청아 공부 시간좀 더 늘려라 으이그
 
-        if(!Files.exists(directory)) {
+    /*
+    public User createUser(String userName, String password) {
 
-            try {
+        
 
-                Files.createDirectories(directory);
-
-            } catch(IOException e) {
-
-                throw new RuntimeException(e);
-
-            }
-
-        }
 
     }
+
+    public User searchUser(UUID userId) {
+
+
+
+    }
+
+    public User updateUser(UUID userID, String newNickName) {
+
+
+
+    }
+
+    public User deleteUser(UUID userID) {
+
+
+
+    }
+
+
+     */
 
     public static <T> void save(Path filePath, T data) { // 파일 저장에 직렬화가 쓰인다. 객체를 byte Stream으로 변경
         // 직렬화
         try(FileOutputStream fos = new FileOutputStream(filePath.toFile());
             ObjectOutputStream oos = new ObjectOutputStream(fos);
-            ) {
+        ) {
 
-                oos.writeObject(data);
+            oos.writeObject(data);
 
         } catch(IOException e) {
 
@@ -59,12 +73,12 @@ public class JavaApplication {
                         .map(path -> {
                             //역직렬화를 통해 byte stream -> 파일로 변경
                             try (FileInputStream fis = new FileInputStream(path.toFile());
-                                    ObjectInputStream ois = new ObjectInputStream(fis)
-                                    ) {
+                                 ObjectInputStream ois = new ObjectInputStream(fis)
+                            ) {
 
-                                        Object data = ois.readObject();
+                                Object data = ois.readObject();
 
-                                        return (T)data; // ??
+                                return (T)data; // ??
 
                             }catch(IOException | ClassNotFoundException e) {
 
@@ -82,7 +96,7 @@ public class JavaApplication {
                 throw new RuntimeException(e);
 
             }
-        // end if
+            // end if
         } else {
 
             return new ArrayList<>();
@@ -91,28 +105,4 @@ public class JavaApplication {
 
     }
 
-
-    public static void main(String[] args) {
-
-        // IO,직렬화 테스트
-        
-        Path userDirectory = Paths.get(System.getProperty("user.dir"), "data");
-
-        init(userDirectory);
-
-        List.of(
-                new User("레드","qwe123"),
-                new User("블루", "asd123"),
-                new User("그린", "zxc123")
-        ).forEach(user -> {
-
-            Path filePath = userDirectory.resolve(user.getNickName().concat(".ser")); // Path의 P는 대문자이다
-            save(filePath, user);
-
-        });
-
-        load(userDirectory)
-                .forEach(data -> System.out.println(data));
-
-    }
 }

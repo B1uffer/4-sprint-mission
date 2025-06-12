@@ -1,17 +1,44 @@
-package com.sprint.mission.discodeit.run;
+package com.sprint.mission.discodeit.service.file;
 
-import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
-import com.sprint.mission.discodeit.service.messageService;
+import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.service.channelService;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
-public class JavaApplication {
+public class FileChannelService {
+
+    /*
+
+    public Channel createChannel(UUID channelId, String channelName) {
+
+
+
+    }
+
+    public Channel readChannel(UUID channelId) {
+
+
+
+    }
+
+    public Channel updateChannel(UUID channelId, String newChannelName) {
+
+
+
+    }
+
+    public Channel deleteChannel(UUID channelId) {
+
+
+
+    }
+
+     */
 
     public static void init(Path directory) { // 파일 생성
 
@@ -35,9 +62,9 @@ public class JavaApplication {
         // 직렬화
         try(FileOutputStream fos = new FileOutputStream(filePath.toFile());
             ObjectOutputStream oos = new ObjectOutputStream(fos);
-            ) {
+        ) {
 
-                oos.writeObject(data);
+            oos.writeObject(data);
 
         } catch(IOException e) {
 
@@ -59,12 +86,12 @@ public class JavaApplication {
                         .map(path -> {
                             //역직렬화를 통해 byte stream -> 파일로 변경
                             try (FileInputStream fis = new FileInputStream(path.toFile());
-                                    ObjectInputStream ois = new ObjectInputStream(fis)
-                                    ) {
+                                 ObjectInputStream ois = new ObjectInputStream(fis)
+                            ) {
 
-                                        Object data = ois.readObject();
+                                Object data = ois.readObject();
 
-                                        return (T)data; // ??
+                                return (T)data; // ??
 
                             }catch(IOException | ClassNotFoundException e) {
 
@@ -82,7 +109,7 @@ public class JavaApplication {
                 throw new RuntimeException(e);
 
             }
-        // end if
+            // end if
         } else {
 
             return new ArrayList<>();
@@ -91,28 +118,4 @@ public class JavaApplication {
 
     }
 
-
-    public static void main(String[] args) {
-
-        // IO,직렬화 테스트
-        
-        Path userDirectory = Paths.get(System.getProperty("user.dir"), "data");
-
-        init(userDirectory);
-
-        List.of(
-                new User("레드","qwe123"),
-                new User("블루", "asd123"),
-                new User("그린", "zxc123")
-        ).forEach(user -> {
-
-            Path filePath = userDirectory.resolve(user.getNickName().concat(".ser")); // Path의 P는 대문자이다
-            save(filePath, user);
-
-        });
-
-        load(userDirectory)
-                .forEach(data -> System.out.println(data));
-
-    }
 }
