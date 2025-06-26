@@ -9,12 +9,12 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
-public class JCFChannel implements channelService {
+public class JCFChannelService implements channelService {
 
     private final Map<UUID, Channel> channelList;
     // 채널 리스트를 만들 때 <Key, Value>로 만드는데 타입설정을 잘해줘야한다.
 
-    public JCFChannel() {
+    public JCFChannelService() {
 
         this.channelList = new HashMap<>();
 
