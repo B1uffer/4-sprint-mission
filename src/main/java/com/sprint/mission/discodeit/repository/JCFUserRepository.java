@@ -1,7 +1,6 @@
-package com.sprint.mission.discodeit.repository.JCF;
+package com.sprint.mission.discodeit.repository;
 
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.repository.UserRepository;
 
 import java.util.*;
 

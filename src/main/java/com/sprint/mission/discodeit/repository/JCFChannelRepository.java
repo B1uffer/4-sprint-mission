@@ -1,7 +1,6 @@
-package com.sprint.mission.discodeit.repository.JCF;
+package com.sprint.mission.discodeit.repository;
 
 import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.repository.ChannelRepository;
 
 import java.util.*;
 

@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.Service;
+package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.entity.DTO.CreateUserDTO;
 import com.sprint.mission.discodeit.entity.DTO.UpdateUserDTO;

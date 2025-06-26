@@ -1,71 +1,60 @@
 package com.sprint.mission.discodeit.service.jcf;
 
-
+import com.sprint.mission.discodeit.Service.ChannelService;
 import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.service.channelService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.UUID;
+import java.util.*;
 
-public class JCFChannelService implements channelService {
-
+@Service
+@RequiredArgsConstructor
+public class JCFChannelService implements ChannelService {
     private final Map<UUID, Channel> channelList;
-    // 채널 리스트를 만들 때 <Key, Value>로 만드는데 타입설정을 잘해줘야한다.
 
     public JCFChannelService() {
-
-        this.channelList = new HashMap<>();
-
+        channelList = new HashMap<>();
     }
 
-
-    public Channel createChannel(UUID channelId, String channelName) {
-
-        Channel channel = new Channel(channelId, channelName);
-
-        this.channelList.put(channelId, channel);
-
+    @Override
+    public Channel createChannel(String channelName) {
+        Channel channel = new Channel(channelName);
+        channelList.put(channel.getId(),channel);
         return channel;
-
     }
 
-    public Channel readChannel(UUID channelId) {
-
-        if(channelList.containsKey(channelId)) {
-
-            Channel findChannel = this.channelList.get(channelId);
-
-            return findChannel;
-
+    @Override
+    public Channel searchChannel(UUID id) {
+        Channel findChannel = null;
+        if(channelList.containsKey(id)) {
+            findChannel = channelList.get(id);
         }
-
-        return null;
-
+        return findChannel;
     }
 
-    public  Channel updateChannel(UUID channelId, String newChannelName) {
-        Channel updatedChannel = channelList.get(channelId);
+    @Override
+    public List<Channel> searchAll() {
+        return channelList.values().stream().toList();
+    }
 
-        if(newChannelName != null && !newChannelName.equals(updatedChannel.getChannelName())) {
-            updatedChannel.updateChannel(newChannelName);
+    @Override
+    public Channel updateChannel(UUID id, String newName) {
+        Channel updatedChannel = null;
+        if(newName == null && newName.isEmpty()) {
+            throw new NoSuchElementException("수정할 수 없습니다.");
+        } else {
+            updatedChannel = channelList.get(id);
+            updatedChannel.setChannelName(newName);
         }
-
         return updatedChannel;
     }
 
-    public Channel deleteChannel(UUID channelId) {
-
-        if(!channelList.containsKey(channelId)) {
-
-            throw new NoSuchElementException("넌 채널을 삭제할 수 없어!");
-
+    @Override
+    public void deleteChannel(UUID id) {
+        if(!channelList.containsKey(id)) {
+            throw new NoSuchElementException("채널을 삭제할 수 없어요.");
+        } else {
+            channelList.remove(id);
         }
-
-        return channelList.remove(channelId);
-
     }
-
-
 }
