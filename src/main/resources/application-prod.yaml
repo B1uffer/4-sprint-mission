@@ -1,0 +1,16 @@
+# 데이터베이스 연결 정보, 서버 포트와 같은 설정값을 프로파일별로 분리하기
+# application-prod는 운영 환경 전용 설정
+spring:
+  config:
+    activate:
+      on-profile: prod # 이 파일을 prod라는 프로필로 사용하겠다고 설정함
+
+server:
+  port: 8080 # 서버포트 설정
+
+logging:
+  level:
+    root: info # 운영 환경에서는 info레벨로 설정
+    com.sprint.mission.discodeit: INFO
+  file:
+    name: logs/sprint_mission_s7.log

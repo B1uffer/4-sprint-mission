@@ -1,0 +1,42 @@
+spring:
+  application:
+    name: discodeit
+  servlet:
+    multipart:
+      maxFileSize: 10MB # 파일 하나의 최대 크기
+      maxRequestSize: 30MB  # 한 번에 최대 업로드 가능 용량
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/discodeit
+    username: discodeit_user
+    password: discodeit1234
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true
+    #        default_batch_fetch_size: 100
+    open-in-view: false
+
+# 로깅
+logging:
+  level:
+    root: info # 기본적으로 info 레벨로 설정하기
+    com.sprint.mission.discodeit: info #기본 로깅 레벨
+    org.hibernate.SQL: debug
+    org.hibernate.orm.jdbc.bind: trace
+  # Lombok의 @Slf4j 애너테이션을 활용하여 로깅을 쉽게 추가할 수 있도록 구성하기
+  file:
+    name: ${user.dir}/log/test.log # 로깅 파일의 위치
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %ms%n"
+    # {년}-{월}-{일} {시}:{분}:{초}:{밀리초} [{스레드명}] {로그 레벨(5글자로 맞춤)} {로거 이름(최대 36글자)} - {로그 메시지}{줄바꿈}
+  # max-history 줄 그어져있음, 안쓰나봄
+    # max-size 또한 마찬가지
+
+discodeit:
+  storage:
+    type: local
+    local:
+      root-path: .discodeit/storage
