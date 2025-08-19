@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.dto.response.PageResponse;
+import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.service.MessageService;
 import java.io.IOException;
 import java.time.Instant;
@@ -14,6 +15,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.PageableDefault;
@@ -32,15 +34,18 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+@Slf4j
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/messages")
 public class MessageController implements MessageApi {
 
   private final MessageService messageService;
+  // 로깅을 위해 messageRepository 추가
+  private final MessageRepository messageRepository;
 
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  public ResponseEntity<MessageDto> create(
+  public ResponseEntity<MessageDto> create( // 메세지 생성
       @RequestPart("messageCreateRequest") MessageCreateRequest messageCreateRequest,
       @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments
   ) {
@@ -59,7 +64,12 @@ public class MessageController implements MessageApi {
             })
             .toList())
         .orElse(new ArrayList<>());
+    // 로그 추가
+    log.info("변환 완료?");
+    log.debug("메시지 생성 준비, channelId : {}, authorId : {}, content : {}", messageCreateRequest.channelId(), messageCreateRequest.authorId(), messageCreateRequest.content());
     MessageDto createdMessage = messageService.create(messageCreateRequest, attachmentRequests);
+    // 로그 추가
+    log.info("메세지 생성 완료! messageId : {}, content : {}",createdMessage.id(), createdMessage.content());
     return ResponseEntity
         .status(HttpStatus.CREATED)
         .body(createdMessage);
@@ -67,16 +77,29 @@ public class MessageController implements MessageApi {
 
   @PatchMapping(path = "{messageId}")
   public ResponseEntity<MessageDto> update(@PathVariable("messageId") UUID messageId,
-      @RequestBody MessageUpdateRequest request) {
+      @RequestBody MessageUpdateRequest request) { // 메세지 수정
+    // 로그 추가
+    log.debug("메세지 수정 준비, PathVariable로 받은 Id : {}, RequestBody로 받은 content : {}", messageId, request.newContent());
     MessageDto updatedMessage = messageService.update(messageId, request);
+    // 로그 추가
+    log.info("메세지 수정 완료! id : {}, content : {}", updatedMessage.id(), updatedMessage.content());
     return ResponseEntity
         .status(HttpStatus.OK)
         .body(updatedMessage);
   }
 
   @DeleteMapping(path = "{messageId}")
-  public ResponseEntity<Void> delete(@PathVariable("messageId") UUID messageId) {
-    messageService.delete(messageId);
+  public ResponseEntity<Void> delete(@PathVariable("messageId") UUID messageId) { // 메세지 삭제
+    // 로그 추가
+    log.debug("메시지 삭제 준비, PathVariable의 messageId : {}", messageId);
+    messageService.delete(messageId); // 메세지 삭제 완료
+    if(messageRepository.existsById(messageId)) {
+      // 로그 추가
+      log.warn("메세지 삭제 실패, id : {}", messageId);
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+    }
+    // 로그 추가
+    log.info("메시지 삭제 완료, id : {}", messageId);
     return ResponseEntity
         .status(HttpStatus.NO_CONTENT)
         .build();

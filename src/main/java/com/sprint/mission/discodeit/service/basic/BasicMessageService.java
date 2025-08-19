@@ -9,6 +9,10 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.exception.basic.ErrorCode;
+import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
+import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.MessageMapper;
 import com.sprint.mission.discodeit.mapper.PageResponseMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
@@ -23,11 +27,13 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class BasicMessageService implements MessageService {
@@ -44,17 +50,27 @@ public class BasicMessageService implements MessageService {
   @Transactional
   @Override
   public MessageDto create(MessageCreateRequest messageCreateRequest,
-      List<BinaryContentCreateRequest> binaryContentCreateRequests) {
+      List<BinaryContentCreateRequest> binaryContentCreateRequests) {  // 메세지 생성
     UUID channelId = messageCreateRequest.channelId();
     UUID authorId = messageCreateRequest.authorId();
 
+    // 로그 추가
+    log.debug("사용자가 있는지 확인, 사용자 ID : {}", channelId);
+    // 로그 추가
+    if(!channelRepository.existsById(channelId)) {
+      log.warn("채널이 존재하지 않습니다! 채널 id는 {}", channelId);
+    }
     Channel channel = channelRepository.findById(channelId)
         .orElseThrow(
-            () -> new NoSuchElementException("Channel with id " + channelId + " does not exist"));
+            () -> new ChannelNotFoundException(ErrorCode.CHANNEL_NOT_FOUND));
+
+    // 로그 추가
+    if(!userRepository.existsById(authorId)) {
+      log.warn("사용자가 존재하지 않습니다. 사용자 ID : {}", authorId);
+    }
     User author = userRepository.findById(authorId)
         .orElseThrow(
-            () -> new NoSuchElementException("Author with id " + authorId + " does not exist")
-        );
+            () -> new UserNotFoundException(ErrorCode.USER_NOT_FOUND));
 
     List<BinaryContent> attachments = binaryContentCreateRequests.stream()
         .map(attachmentRequest -> {
@@ -111,22 +127,37 @@ public class BasicMessageService implements MessageService {
 
   @Transactional
   @Override
-  public MessageDto update(UUID messageId, MessageUpdateRequest request) {
+  public MessageDto update(UUID messageId, MessageUpdateRequest request) { // 메세지 수정
     String newContent = request.newContent();
+
+    // 로그 추가
+    log.info("메세지 조회 시작. 메세지 ID : {}", messageId);
+    // 로그 추가
+    if(!messageRepository.existsById(messageId)) {
+      log.warn("메세지가 존재하지 않습니다. 메세지 ID : {}", messageId);
+    }
     Message message = messageRepository.findById(messageId)
         .orElseThrow(
-            () -> new NoSuchElementException("Message with id " + messageId + " not found"));
+            () -> new MessageNotFoundException(ErrorCode.MESSAGE_NOT_FOUND));
     message.update(newContent);
     return messageMapper.toDto(message);
   }
 
   @Transactional
   @Override
-  public void delete(UUID messageId) {
+  public void delete(UUID messageId) { // 메세지 삭제
+    // 로그 추가
+    log.debug("메세지 삭제에 대한 조회 시작. 메세지 ID : {}", messageId);
+    // 로그 추가
+    if(!messageRepository.existsById(messageId)) {
+      log.warn("삭제할 메세지가 존재하지 않습니다. 메세지 ID : {}", messageId);
+    }
     if (!messageRepository.existsById(messageId)) {
-      throw new NoSuchElementException("Message with id " + messageId + " not found");
+      throw new MessageNotFoundException(ErrorCode.MESSAGE_NOT_FOUND);
     }
 
     messageRepository.deleteById(messageId);
+    // 로그 추가
+    log.info("메세지 삭제 성공! 메세지 id : {}", messageId);
   }
 }

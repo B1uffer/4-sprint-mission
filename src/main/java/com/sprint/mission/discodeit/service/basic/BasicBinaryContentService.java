@@ -3,6 +3,8 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.exception.basic.ErrorCode;
+import com.sprint.mission.discodeit.exception.binaryContent.BinaryContentNotFoundException;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
@@ -11,9 +13,11 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class BasicBinaryContentService implements BinaryContentService {
@@ -24,7 +28,7 @@ public class BasicBinaryContentService implements BinaryContentService {
 
   @Transactional
   @Override
-  public BinaryContentDto create(BinaryContentCreateRequest request) {
+  public BinaryContentDto create(BinaryContentCreateRequest request) { // 바이너리 생성
     String fileName = request.fileName();
     byte[] bytes = request.bytes();
     String contentType = request.contentType();
@@ -56,9 +60,9 @@ public class BasicBinaryContentService implements BinaryContentService {
 
   @Transactional
   @Override
-  public void delete(UUID binaryContentId) {
+  public void delete(UUID binaryContentId) { // 바이너리 삭제
     if (!binaryContentRepository.existsById(binaryContentId)) {
-      throw new NoSuchElementException("BinaryContent with id " + binaryContentId + " not found");
+      throw new BinaryContentNotFoundException(ErrorCode.BINARY_CONTENT_NOT_FOUND);
     }
     binaryContentRepository.deleteById(binaryContentId);
   }
