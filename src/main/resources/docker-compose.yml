@@ -1,0 +1,47 @@
+# 애플리케이션과 postgreSQL 서비스를 포함하기
+# application-dev.yaml 참조
+services:
+  app:
+    image: discodeit:local # 빌드된 이미지를 이 태그로 저장한다
+    build:
+      context: . # dockerfile이 있는 폴더?
+      dockerfile: Dockerfile
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE} # spring: profiles: active
+      SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/${POSTGRES_DB} # ${} 안의 환경변수는 .env에서 가져옴
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      SERVER_PORT: "80" # 이건 컨테이너 내부 포트
+      BINARY_CONTENT_DIR: /data/binary # 애플리케이션에서 /data/binary로 파일을 저장하도록 함
+    volumes: # 컨테이너 폴더 / data/binary를 named binary에 연결함
+      - binary_data:/data/binary
+    depends_on:
+      - postgres # 서비스간 의존성 추가
+    ports:
+      - 8081:80 # 브라우저에서 http://localhost:8081로 접속하려면 맵핑을 8081:80으로 해야함
+
+# .env 참조
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-discodeit} # :-discodeit 은 디폴트값이 discodeit
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER not set} # :?는 만약 값이 없을때 실행을 중지하고 메시지를 띄워줌
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:? POSTGRES_PASSWORD not set}
+      PGDATA: /var/lib/postgresql/data # 기본값이라고 함
+    volumes:
+      - pgdata:/var/lib/postgresql/data #named volume으로 영속화하기\
+      - ./src/main/resources/schema.sql:docker-entrypoint-initdb.d/schema-001.sql:ro # PostgreSQL 실행 후 schema.sql이 자동 실행
+
+  discodeit:
+    build: .
+    environment:
+      STORAGE_TYPE: s3
+      AWS_A3_ACCESS_KEY: ${AWS_S3_ACCESS_KEY}
+      AWS_S3_SECRET_KEY: ${AWS_S3_SECRET_KEY}
+      AWS_S3_REGION: ${AWS_S3_REGION}
+      AWS_S3_BUCKET: ${AWS_S3_BUCKET}
+      AWS_S3_PRESIGNED_URL_EXPIRATION: ${AWS_S3_PRESIGNED_URL_EXPIRATION:-600}
+
+volumes: # named volume 선언
+  binary_data:
+  pgdata:
