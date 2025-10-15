@@ -13,6 +13,7 @@ import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.csrf.*;
@@ -52,9 +53,13 @@ public class SecurityConfig {
                         .requestMatchers("/manager").hasRole("CHANNEL_MANAGER")
                         .requestMatchers("/user").hasRole("USER"))
                 .exceptionHandling(ex -> ex // 적절한 권한이 없는 경우 403 응답을 반환
-                        .authenticationEntryPoint(git a)
-                        .accessDeniedHandler()
-                );
+                        .authenticationEntryPoint()
+                        .accessDeniedHandler())
+                .sessionManagement(management -> management
+                        .sessionConcurrency(concurrency -> concurrency
+                                .maximumSessions(1) // 동일한 계정으로 동시 로그인 할 수 없음, 동일한 계정 최대 세션 1개
+                                .sessionRegistry(sessionRegistry())
+                        ));
 
         return http.build();
     }
@@ -74,6 +79,11 @@ public class SecurityConfig {
         DefaultMethodSecurityExpressionHandler handler = new DefaultMethodSecurityExpressionHandler();
         handler.setRoleHierarchy(roleHierarchy);
         return handler;
+    }
+
+    @Bean
+    public SessionRegistry sessionRegistry() {
+
     }
 
 }

@@ -35,7 +35,8 @@ public class DiscodeitUserDetailsService implements UserDetailsService {
                 user.getUsername(),
                 user.getEmail(),
                 binaryContentDto,
-                user.getStatus().isOnline());
+                user.getStatus().isOnline(),
+                user.getRole());
 
         DiscodeitUserDetails userDetails = new DiscodeitUserDetails(userDto, user.getPassword());
 
