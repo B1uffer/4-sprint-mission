@@ -1,7 +1,9 @@
 package com.sprint.mission.discodeit.config;
 
 import com.sprint.mission.discodeit.auth.LoginFailureHandler;
-import com.sprint.mission.discodeit.auth.LoginSuccessHandler;
+import com.sprint.mission.discodeit.auth.jwt.JwtLoginSuccessHandler;
+import com.sprint.mission.discodeit.auth.jwt.JwtTokenProvider;
+import com.sprint.mission.discodeit.security.Http403ForbiddenAccessDeniedHandler;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
@@ -11,10 +13,14 @@ import org.springframework.security.access.expression.method.DefaultMethodSecuri
 import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.Http403ForbiddenEntryPoint;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.csrf.*;
 import org.springframework.util.StringUtils;
@@ -26,7 +32,7 @@ import java.util.function.Supplier;
 @Configuration
 public class SecurityConfig {
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, LoginSuccessHandler loginSuccessHandler, LoginFailureHandler loginFailureHandler) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, LoginFailureHandler loginFailureHandler, JwtTokenProvider jwtTokenProvider, JwtLoginSuccessHandler jwtLoginSuccessHandler) throws Exception {
         http
                 .csrf(csrf -> csrf // 토큰발급
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
@@ -34,7 +40,7 @@ public class SecurityConfig {
                 )
                 .formLogin(login -> login // 로그인
                         .loginProcessingUrl("/api/auth/login")
-                        .successHandler(loginSuccessHandler)
+                        .successHandler(jwtLoginSuccessHandler)
                         .failureHandler(loginFailureHandler)
                 )
                 .logout(logout -> logout // 로그아웃
@@ -53,14 +59,13 @@ public class SecurityConfig {
                         .requestMatchers("/manager").hasRole("CHANNEL_MANAGER")
                         .requestMatchers("/user").hasRole("USER"))
                 .exceptionHandling(ex -> ex // 적절한 권한이 없는 경우 403 응답을 반환
-                        .authenticationEntryPoint()
-                        .accessDeniedHandler())
+                        .authenticationEntryPoint(new Http403ForbiddenEntryPoint())
+                        .accessDeniedHandler(new Http403ForbiddenAccessDeniedHandler())
+                )
                 .sessionManagement(management -> management
-                        .sessionConcurrency(concurrency -> concurrency
-                                .maximumSessions(1) // 동일한 계정으로 동시 로그인 할 수 없음, 동일한 계정 최대 세션 1개
-                                .sessionRegistry(sessionRegistry())
-                        ));
-
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // 세션 정책을 STATELESS로 변경함, SessionConcurrency 설정 삭제
+                )
+                .rememberMe(Customizer.withDefaults()); // rememberMe
         return http.build();
     }
 
@@ -83,7 +88,7 @@ public class SecurityConfig {
 
     @Bean
     public SessionRegistry sessionRegistry() {
-
+        return new SessionRegistryImpl();
     }
 
 }

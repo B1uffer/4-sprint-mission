@@ -48,6 +48,8 @@ dependencies {
     testAnnotationProcessor 'org.projectlombok:lombok'
 
     implementation 'org.springframework.boot:spring-boot-starter-security'
+
+    implementation 'com.nimbusds:nimbus-jose-jwt:10.3' // sprint10 JWT 의존성 추가
 }
 
 tasks.named('test') {
