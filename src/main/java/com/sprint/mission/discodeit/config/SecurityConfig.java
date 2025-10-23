@@ -51,7 +51,7 @@ public class SecurityConfig {
                 .logout(logout -> logout // 로그아웃
                         .logoutUrl("/api/auth/logout")
                         .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT)) // 204
-                        .addLogoutHandler(jwtLogoutHandler)
+                        .addLogoutHandler(jwtLogoutHandler) // 리프레시 토큰 삭제
 
                 )
                 .authorizeHttpRequests(auth -> auth
