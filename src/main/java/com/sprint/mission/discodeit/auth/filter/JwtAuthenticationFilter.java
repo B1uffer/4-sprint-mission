@@ -5,7 +5,6 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -29,11 +28,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-        String token = request.getHeader("Authorization");
-        if(!token.startsWith("Bearer ")) { // Bearer 이 포함된 토큰만 인증함
+        String authorization = request.getHeader("Authorization");
+        if(authorization == null || !authorization.startsWith("Bearer ")) { // Bearer 이 포함된 토큰만 인증함
             throw new ServletException("올바른 토큰 형식이 아닙니다.");
         } else {
-            Map<String, Object> claims = jwtTokenProvider.getClaims(token); // JwtProvider를 통해 엑세스 토큰 유효성 검사
+            String jws = request.getHeader("Authorization").replace("Bearer ", "");
+            Map<String, Object> claims = jwtTokenProvider.getClaims(jws); // JwtProvider를 통해 엑세스 토큰 유효성 검사
             UserDetails details = userDetailsService.loadUserByUsername(claims.get("username").toString()); // 밑에 details
 
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(

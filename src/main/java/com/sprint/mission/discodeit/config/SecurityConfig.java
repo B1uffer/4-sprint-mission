@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.config;
 
 import com.sprint.mission.discodeit.auth.LoginFailureHandler;
+import com.sprint.mission.discodeit.auth.jwt.JwtLogoutHandler;
 import com.sprint.mission.discodeit.auth.jwt.JwtLoginSuccessHandler;
 import com.sprint.mission.discodeit.auth.jwt.JwtTokenProvider;
 import com.sprint.mission.discodeit.security.Http403ForbiddenAccessDeniedHandler;
@@ -32,7 +33,11 @@ import java.util.function.Supplier;
 @Configuration
 public class SecurityConfig {
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, LoginFailureHandler loginFailureHandler, JwtTokenProvider jwtTokenProvider, JwtLoginSuccessHandler jwtLoginSuccessHandler) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http,
+                                           LoginFailureHandler loginFailureHandler,
+                                           JwtTokenProvider jwtTokenProvider,
+                                           JwtLoginSuccessHandler jwtLoginSuccessHandler,
+                                           JwtLogoutHandler jwtLogoutHandler) throws Exception {
         http
                 .csrf(csrf -> csrf // 토큰발급
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
@@ -46,6 +51,7 @@ public class SecurityConfig {
                 .logout(logout -> logout // 로그아웃
                         .logoutUrl("/api/auth/logout")
                         .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT)) // 204
+                        .addLogoutHandler(jwtLogoutHandler)
 
                 )
                 .authorizeHttpRequests(auth -> auth
@@ -64,8 +70,8 @@ public class SecurityConfig {
                 )
                 .sessionManagement(management -> management
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // 세션 정책을 STATELESS로 변경함, SessionConcurrency 설정 삭제
-                )
-                .rememberMe(Customizer.withDefaults()); // rememberMe
+                );
+        // rememberMe 삭제
         return http.build();
     }
 
