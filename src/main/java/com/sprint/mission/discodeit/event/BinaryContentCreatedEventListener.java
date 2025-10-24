@@ -22,7 +22,7 @@ public class BinaryContentCreatedEventListener {
 
     // 트랜잭션이 commit되었을 때 실행
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    @EventListener
+    @EventListener(condition = "#event.binaryContent.status == 'PROCESSING'")
     public void handleBinaryContentCreatedEvent(BinaryContentCreatedEvent event) {
         System.out.println("★BinaryContentCreatedEvent received★ : " + event.getBinaryContent());
 
