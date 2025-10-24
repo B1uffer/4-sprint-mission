@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.entity;
 
 import com.sprint.mission.discodeit.entity.base.BaseEntity;
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
@@ -12,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "binary_contents")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class BinaryContent extends BaseEntity {
+public class BinaryContent extends BaseUpdatableEntity { // BaseUpdatableEntity 상속
 
   @Column(nullable = false)
   private String fileName;
@@ -20,6 +21,9 @@ public class BinaryContent extends BaseEntity {
   private Long size;
   @Column(length = 100, nullable = false)
   private String contentType;
+
+  // BinaryContent에 바이너리 데이터 업로드 상태 속성(status) 추가
+  private BinaryContentStatus status = BinaryContentStatus.PROCESSING; // 기본값
 
   public BinaryContent(String fileName, Long size, String contentType) {
     this.fileName = fileName;
