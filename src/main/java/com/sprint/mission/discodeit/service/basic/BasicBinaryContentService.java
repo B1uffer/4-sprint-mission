@@ -77,7 +77,13 @@ public class BasicBinaryContentService implements BinaryContentService {
   @Transactional
   @Override
   public BinaryContentDto updateStatus(UUID binaryContentId, BinaryContentStatus status) {
-    return null;
+    log.info("상태 수정 시작: id={}, status={}", binaryContentId, status);
+    BinaryContent binaryContent = binaryContentRepository.findById(binaryContentId)
+            .orElseThrow(() -> BinaryContentNotFoundException.withId(binaryContentId));
+
+    binaryContent.setStatus(status);
+    log.info("상태 수정 완료: id={}, status={}", binaryContentId, binaryContent.getStatus());
+    return binaryContentMapper.toDto(binaryContent);
   }
 
   @Transactional

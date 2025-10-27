@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.sprint.mission.discodeit.entity.base.BaseEntity;
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -24,6 +23,10 @@ public class BinaryContent extends BaseUpdatableEntity { // BaseUpdatableEntity 
 
   // BinaryContent에 바이너리 데이터 업로드 상태 속성(status) 추가
   private BinaryContentStatus status = BinaryContentStatus.PROCESSING; // 기본값
+
+  public void setStatus(BinaryContentStatus status) {
+    this.status = status;
+  }
 
   public BinaryContent(String fileName, Long size, String contentType) {
     this.fileName = fileName;

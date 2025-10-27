@@ -33,6 +33,14 @@ public class ReadStatus extends BaseUpdatableEntity {
   @Column(columnDefinition = "timestamp with time zone", nullable = false)
   private Instant lastReadAt;
 
+  // 사용자별로 관심있는 채널의 알림만 받을 수 있도록 채널 알림 여부 속성 추가
+  @Column(name = "notification_enabled", columnDefinition = "boolean")
+  private boolean notificationEnabled;
+
+  public void setNotificationEnabled(boolean notificationEnabled) {
+    this.notificationEnabled = notificationEnabled;
+  }
+
   public ReadStatus(User user, Channel channel, Instant lastReadAt) {
     this.user = user;
     this.channel = channel;
