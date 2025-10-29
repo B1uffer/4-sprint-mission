@@ -10,7 +10,9 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.NotificationRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 @Slf4j
@@ -32,6 +34,7 @@ public class NotificationRequiredEventListener {
      * 해당 ReadStatus의 사용자들에게 알림을 생성하기
      * 해당 메시지를 보낸 사람은 알림 대상에서 제외하기
      */
+    @Async
     @TransactionalEventListener
     public void on(MessageCreatedEvent event) {
         System.out.println("onMessageCreatedEvent");
@@ -52,6 +55,7 @@ public class NotificationRequiredEventListener {
     /**
      * 권한이 변경된 당사자에게 알림을 생성하기
      */
+    @Async
     @TransactionalEventListener
     public void on(RoleUpdatedEvent event) {
         User user = userRepository.findById(event.getUser().getId())

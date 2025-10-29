@@ -25,6 +25,11 @@ management:
   endpoint:
     health:
       show-details: always
+  observations: # Actuator 설정 추가
+    annotations:
+      enabled : true
+      # /actuator/metrics/message.create.async에서 측정된 시간 확인 가능
+      # @EnableAsync를 활성화 / 비활성화 해보면서 동기 / 비동기 처리 간 응답 속도의 차이를 확인해보세요.
 
 info:
   name: Discodeit
