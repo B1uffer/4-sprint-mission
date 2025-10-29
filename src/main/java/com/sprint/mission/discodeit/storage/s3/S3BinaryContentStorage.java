@@ -13,6 +13,9 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Recover;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
@@ -51,6 +54,11 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
     this.bucket = bucket;
   }
 
+  /**
+   * S3에 있는, 바이너리 데이터를 저장하는 메서드에 @Retryable를 활용하기
+   * 재시도 정책(횟수, 대기시간 등) 설정하기
+   */
+  @Retryable(maxAttempts = 5, backoff = @Backoff(delay = 3000))
   @Override
   public UUID put(UUID binaryContentId, byte[] bytes) {
     String key = binaryContentId.toString();
@@ -147,5 +155,10 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
             )
         )
         .build();
+  }
+
+  @Recover
+  public void recover() {
+
   }
 } 
