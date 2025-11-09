@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.ReadStatus;
+import com.sprint.mission.discodeit.event.listener.SseEventListener;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.channel.PrivateChannelUpdateException;
 import com.sprint.mission.discodeit.mapper.ChannelMapper;
@@ -40,6 +41,9 @@ public class BasicChannelService implements ChannelService {
   private final ChannelMapper channelMapper;
   private final CacheManager cacheManager;
 
+  // sse
+  private final BasicSseService sseService;
+
   @CacheEvict(value = "channels", allEntries = true)
   @PreAuthorize("hasRole('CHANNEL_MANAGER')")
   @Transactional
@@ -68,6 +72,12 @@ public class BasicChannelService implements ChannelService {
     readStatusRepository.saveAll(readStatuses);
     evictCache(request.participantIds());
     log.info("채널 생성 완료: id={}, name={}", channel.getId(), channel.getName());
+
+    // sse
+    sseService.send(channel.getId(),
+            SseEventListener.CHANNEL_CREATED,
+            channelMapper.toDto(channel));
+
     return channelMapper.toDto(channel);
   }
 
@@ -109,6 +119,12 @@ public class BasicChannelService implements ChannelService {
     }
     channel.update(newName, newDescription);
     log.info("채널 수정 완료: id={}, name={}", channelId, channel.getName());
+
+    // sse
+    sseService.send(channelId,
+            SseEventListener.CHANNEL_UPDATED,
+            channelMapper.toDto(channel));
+
     return channelMapper.toDto(channel);
   }
 

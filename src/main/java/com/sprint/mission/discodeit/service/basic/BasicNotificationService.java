@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.data.NotificationDto;
 import com.sprint.mission.discodeit.entity.Notification;
+import com.sprint.mission.discodeit.event.listener.SseEventListener;
 import com.sprint.mission.discodeit.exception.notification.NotificationForbiddenException;
 import com.sprint.mission.discodeit.exception.notification.NotificationNotFoundException;
 import com.sprint.mission.discodeit.mapper.NotificationMapper;
@@ -29,6 +30,7 @@ public class BasicNotificationService implements NotificationService {
   private final NotificationRepository notificationRepository;
   private final NotificationMapper notificationMapper;
   private final CacheManager cacheManager;
+  private final BasicSseService sseService;
 
   @Cacheable(value = "notifications", key = "#receiverId", unless = "#result.isEmpty()")
   @PreAuthorize("principal.userDto.id == #receiverId")
@@ -76,6 +78,13 @@ public class BasicNotificationService implements NotificationService {
     notificationRepository.saveAll(notifications);
     evictNotificationCache(receiverIds);
     log.info("새 알림 생성 완료: receiverIds={}", receiverIds);
+
+    // SSE
+    for(UUID receiverId : receiverIds) {
+      sseService.send(receiverId,
+              SseEventListener.NOTIFICATIONS_CREATED,
+              notificationMapper.toDto(new Notification(receiverId, title, content)));
+    }
   }
 
   private void evictNotificationCache(Set<UUID> receiverIds) {
